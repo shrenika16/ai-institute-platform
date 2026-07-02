@@ -45,9 +45,9 @@ function CourseLearningPage() {
         res.data.lessons.length > 0
       ) {
 
-        setCurrentVideo(
-          res.data.lessons[0].videoUrl
-        );
+      setCurrentVideo(
+          res.data.lessons[0]?.videoUrl || ""
+      );
 
       }
 

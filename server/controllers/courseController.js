@@ -14,17 +14,20 @@ const addCourse = async (
   try {
 
     const {
-      title,
-      description,
-      duration,
-      price,
-      instructor,
-      category,
-      level,
-      status,
-      studentsCount,
+    title,
+    description,
+    duration,
+    price,
+    instructor,
+    category,
+    level,
+    status,
+    studentsCount,
+  } = req.body;
 
-    } = req.body;
+    const lessons = req.body.lessons
+      ? JSON.parse(req.body.lessons)
+      : [];
 
     // =================================================
     // CLOUDINARY IMAGE URL
@@ -65,17 +68,18 @@ const addCourse = async (
     // =================================================
 
     const newCourse = new Course({
-      title,
-      description,
-      duration,
-      price,
-      thumbnail,
-      instructor,
-      category,
-      level,
-      status,
-      studentsCount,
-    });
+        title,
+        description,
+        duration,
+        price,
+        thumbnail,
+        instructor,
+        category,
+        level,
+        status,
+        studentsCount,
+        lessons,
+      });
 
     await newCourse.save();
 
@@ -194,10 +198,7 @@ const getSingleCourse = async (
 // UPDATE COURSE
 // =================================================
 
-const updateCourse = async (
-  req,
-  res
-) => {
+const updateCourse = async (req, res) => {
 
   try {
 
@@ -205,66 +206,45 @@ const updateCourse = async (
       ...req.body,
     };
 
-    // =================================================
-    // UPDATE THUMBNAIL
-    // =================================================
-
+    // Thumbnail
     if (req.file) {
+      updateData.thumbnail = req.file.path;
+    }
 
-      updateData.thumbnail =
-        req.file.path;
-
+    // Lessons
+    if (req.body.lessons) {
+      updateData.lessons = JSON.parse(req.body.lessons);
     }
 
     const updatedCourse =
       await Course.findByIdAndUpdate(
-
         req.params.id,
-
         updateData,
-
         {
           new: true,
         }
-
       );
 
     if (!updatedCourse) {
-
       return res.status(404).json({
-
         success: false,
-
-        message:
-          "Course Not Found",
-
+        message: "Course Not Found",
       });
-
     }
 
-    res.status(200).json({
-
+    return res.status(200).json({
       success: true,
-
-      message:
-        "Course Updated Successfully",
-
-      course:
-        updatedCourse,
-
+      message: "Course Updated Successfully",
+      course: updatedCourse,
     });
 
   } catch (error) {
 
     console.log(error);
 
-    res.status(500).json({
-
+    return res.status(500).json({
       success: false,
-
-      message:
-        "Server Error",
-
+      message: "Server Error",
     });
 
   }

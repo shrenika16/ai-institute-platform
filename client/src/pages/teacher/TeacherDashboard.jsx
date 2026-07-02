@@ -183,17 +183,23 @@ const [topStudents, setTopStudents] =
   useState([]);
   // ================= COURSE DATA =================
 
-  const [courseData, setCourseData] =
-    useState({
+const [courseData, setCourseData] = useState({
+  title: "",
+  description: "",
+  duration: "",
+  price: "",
+  thumbnail: "",
+  instructor: "",
+  category: "",
+  level: "Beginner",
+
+  lessons: [
+    {
       title: "",
-      description: "",
-      duration: "",
-      price: "",
-      thumbnail: "",
-      instructor: "",
-      category: "",
-      level: "Beginner",
-    });
+      videoUrl: "",
+    },
+  ],
+});
 
   // ================= ASSIGNMENT DATA =================
 
@@ -741,6 +747,11 @@ const fetchNotifications = async () => {
       courseData.level
     );
 
+    formData.append(
+      "lessons",
+      JSON.stringify(courseData.lessons)
+    );
+
     if (editId) {
 
             await axios.put(
@@ -797,6 +808,46 @@ const fetchNotifications = async () => {
     setLoading(false);
 
   }
+
+};
+
+const addLesson = () => {
+  setCourseData({
+    ...courseData,
+    lessons: [
+      ...courseData.lessons,
+      {
+        title: "",
+        videoUrl: "",
+      },
+    ],
+  });
+};
+
+const removeLesson = (index) => {
+  const updated = [...courseData.lessons];
+  updated.splice(index, 1);
+
+  setCourseData({
+    ...courseData,
+    lessons: updated,
+  });
+};
+
+const handleLessonChange = (
+  index,
+  field,
+  value
+) => {
+
+  const updated = [...courseData.lessons];
+
+  updated[index][field] = value;
+
+  setCourseData({
+    ...courseData,
+    lessons: updated,
+  });
 
 };
 
@@ -888,34 +939,39 @@ async () => {
 
   };
 
-  // ================= EDIT COURSE =================
+// ================= EDIT COURSE =================
 
-  const handleEdit = (course) => {
+const handleEdit = (course) => {
 
-    setCourseData({
-      title: course.title,
-      description:
-        course.description,
-      duration: course.duration,
-      price: course.price,
-      thumbnail:
-        course.thumbnail || "",
-      instructor:
-        course.instructor || "",
-      category:
-        course.category || "",
-      level:
-        course.level || "Beginner",
-    });
+  setCourseData({
+    title: course.title,
+    description: course.description,
+    duration: course.duration,
+    price: course.price,
+    thumbnail: course.thumbnail || "",
+    instructor: course.instructor || "",
+    category: course.category || "",
+    level: course.level || "Beginner",
 
-    setEditId(course._id);
+    lessons:
+      course.lessons?.length > 0
+        ? course.lessons
+        : [
+            {
+              title: "",
+              videoUrl: "",
+            },
+          ],
+  });
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+  setEditId(course._id);
 
-  };
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+
+};
 
   // ================= ASSIGNMENT SUBMIT =================
 
@@ -1824,9 +1880,70 @@ console.log("Notifications State =", notifications);
                   <option>
                     Advanced
                   </option>
-
                 </select>
+                  
+                <div className="md:col-span-2">
 
+                              <h3 className="text-xl font-bold mb-3">
+                                Lessons
+                              </h3>
+
+                              {courseData.lessons.map((lesson, index) => (
+
+                                <div
+                                  key={index}
+                                  className="border p-4 rounded-xl mb-4"
+                                >
+
+                                  <input
+                                    type="text"
+                                    placeholder="Lesson Title"
+                                    value={lesson.title}
+                                    onChange={(e) =>
+                                      handleLessonChange(
+                                        index,
+                                        "title",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="border p-3 rounded-xl w-full mb-3"
+                                  />
+
+                                  <input
+                                    type="text"
+                                    placeholder="YouTube Embed URL"
+                                    value={lesson.videoUrl}
+                                    onChange={(e) =>
+                                      handleLessonChange(
+                                        index,
+                                        "videoUrl",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="border p-3 rounded-xl w-full mb-3"
+                                  />
+
+                                  <button
+                                    type="button"
+                                    onClick={() => removeLesson(index)}
+                                    className="bg-red-500 text-white px-4 py-2 rounded-xl"
+                                  >
+                                    Remove Lesson
+                                  </button>
+
+                                </div>
+
+                              ))}
+
+                              <button
+                                type="button"
+                                onClick={addLesson}
+                                className="bg-blue-600 text-white px-5 py-3 rounded-xl"
+                              >
+                                + Add Lesson
+                              </button>
+
+                            </div>
                 <button
                   type="submit"
                   disabled={loading}
